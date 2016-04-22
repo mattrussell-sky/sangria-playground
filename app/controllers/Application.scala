@@ -1,24 +1,23 @@
 package controllers
 
 import javax.inject.Inject
-
 import akka.actor.ActorSystem
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.Configuration
-
-
 import sangria.execution.{ErrorWithResolver, QueryAnalysisError, Executor}
 import sangria.parser.{SyntaxError, QueryParser}
 import sangria.marshalling.playJson._
-
 import models.{FriendsResolver, CharacterRepo, SchemaDefinition}
 import sangria.renderer.SchemaRenderer
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import models.SpikeSchema
+import models.Repository
+import models.SpikeSchema
+import models.SpikeSchema
 
-class Application @Inject() (system: ActorSystem, config: Configuration) extends Controller {
+class Application @Inject() (repository: Repository)(implicit system: ActorSystem, config: Configuration) extends Controller {
   import system.dispatcher
 
   val googleAnalyticsCode = config.getString("gaCode")
@@ -56,7 +55,7 @@ class Application @Inject() (system: ActorSystem, config: Configuration) extends
 
       // query parsed successfully, time to execute it!
       case Success(queryAst) =>
-        Executor.execute(SchemaDefinition.StarWarsSchema, queryAst, new CharacterRepo,
+        Executor.execute(SpikeSchema.SpikeSchema, queryAst, repository,
             operationName = operation,
             variables = variables getOrElse Json.obj(),
             deferredResolver = new FriendsResolver,
@@ -80,6 +79,6 @@ class Application @Inject() (system: ActorSystem, config: Configuration) extends
     }
 
   def renderSchema = Action {
-    Ok(SchemaRenderer.renderSchema(SchemaDefinition.StarWarsSchema))
+    Ok(SchemaRenderer.renderSchema(SpikeSchema.SpikeSchema))
   }
 }
